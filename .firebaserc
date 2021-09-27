@@ -1,0 +1,11 @@
+{
+  "targets": {
+    "demo2020-75757": {
+      "hosting": {
+        "FireDemo": [
+          "demo2020-75757"
+        ]
+      }
+    }
+  }
+}

@@ -16,7 +16,9 @@ import { environment } from 'src/environments/environment';
     BrowserModule,
     AppRoutingModule,
     IonicModule.forRoot(),
+    // import to configure firebase
     provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
+    // import to enable Firestore service
     provideFirestore(() => getFirestore()),
   ],
   providers: [],

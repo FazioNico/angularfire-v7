@@ -10,7 +10,12 @@
     <ion-list>
       <ion-item *ngFor="let item of data$|async">
         
-        >{{item|json}}<
+        <ion-checkbox 
+          slot="start" 
+          [checked]="item.done === true"
+          (ionChange)="toggleDone(item)"></ion-checkbox>
+
+        {{item|json}}
         
         <ion-buttons slot="end">
           <ion-button (click)="presentEditTodo(item)">

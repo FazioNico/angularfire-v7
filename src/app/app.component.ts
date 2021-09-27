@@ -95,4 +95,15 @@ export class AppComponent implements OnInit {
       await this.updateTodo(todo.id, data.values.desc);
     }
   }
+
+  /**
+   * UI Event Method to toggle todo Done State
+   */
+   async toggleDone(todo: {id: string, done: boolean}) {
+    const fbdoc = doc(this._firestore, 'demo-todos/' + todo.id);
+    const done = !todo.done;
+    // update the data with promise
+    await updateDoc(fbdoc, {done}); 
+
+   }
 }

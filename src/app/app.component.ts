@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { AlertController, IonInput } from '@ionic/angular';
 import { Observable } from 'rxjs';
+import { first } from 'rxjs/operators';
 import { TodosService } from './todos.service';
 import { authState, User, Auth, signInWithPopup, GoogleAuthProvider, UserCredential, signOut } from '@angular/fire/auth';
+import { user } from 'rxfire/auth';
 
 @Component({
   selector: 'app-root',
@@ -22,22 +24,27 @@ export class AppComponent implements OnInit {
 
   ) {  }
 
-  ngOnInit() {
-    this._todosService.loadTodo();
-    this.data$ = this._todosService.data$;
+  async ngOnInit() {
     this.user$ = authState(this._auth);
+    // get first() stream data from user$ observable data from Firebase Auth
+    const user = await this.user$.pipe(first()).toPromise();
+    // if user is connected request to load todos from user uid
+    if (user) {
+      this._todosService.loadTodo(user?.uid);
+      this.data$ = this._todosService.data$;
+    }
   }
 
   /**
    * Method to update Todo description from Firebase Firestore collection
    * @param input Ionic input field
    */
-  async addTodo(input: IonInput) {
+  async addTodo(input: IonInput, uid: string) {
     console.log('add todo...');
     if (!input.value) {
       return;
     }
-    this._todosService.addTodo(input.value.toString());
+    this._todosService.addTodo({desc: input.value.toString(), uid});
     // clear the input value
     input.value = '';
     console.log('finish!');
@@ -99,8 +106,11 @@ export class AppComponent implements OnInit {
 
   async signinWithGoogle() {
     const provider = new GoogleAuthProvider();
-    const user: UserCredential = await signInWithPopup(this._auth, provider);
-    console.log('>>>', user);
+    const credental: UserCredential = await signInWithPopup(this._auth, provider);
+    console.log('>>>', credental);
+    // user is connected now request to load todos from user uid
+    this._todosService.loadTodo(credental.user.uid);
+    this.data$ = this._todosService.data$;
   }
 
   async logout() {

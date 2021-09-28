@@ -17,14 +17,15 @@ export class TodosService {
   /**
    * Method to load todo from Firebase
    */
-  loadTodo(): void {
+  loadTodo(uid: string): void {
     // create firebase reference to the collection
     const fbCollection = collection(this._firestore, 'demo-todos');
     // create query Constraints
     const limitTo: QueryConstraint = limit(2);
     const isTodo: QueryConstraint = where('done' , '==', false);
+    const byUserId: QueryConstraint = where('uid' , '==', uid);
     // build query with constraints
-    const q = query(fbCollection, limitTo, isTodo);
+    const q = query(fbCollection, byUserId, limitTo, isTodo);
     // get the data as observable with custome ID field 
     this.data$ = collectionData(q, {idField: 'id'});
   }
@@ -33,12 +34,12 @@ export class TodosService {
    * Method to creat Todo and save to Firebase Firestore collection
    * @param value Todo description data
    */
-  async addTodo(value: string): Promise<void> {
+  async addTodo(todo: {desc: string, uid: string}): Promise<void> {
     const id = Date.now();
     // create firebase reference to the collection
     const fbDoc = doc(this._firestore, 'demo-todos/' + id);
     // set the data with promise 
-    await setDoc(fbDoc, {desc: value, done: false}).catch(err => {
+    await setDoc(fbDoc, {...todo, done: false}).catch(err => {
       console.log('ERROR: ',err);
     });
   }

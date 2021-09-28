@@ -8,9 +8,12 @@
 
     <!-- user is auth -->
     <ng-container *ngIf="user$ | async as user; else signInTemplate">
+      <pre>
+        {{ user.uid|json }}
+      </pre>
       <ion-button (click)="logout()">logout</ion-button>
       <ion-input #inputElement type="text" clearInput="true"  clearOnEdit="true"></ion-input>
-      <ion-button (click)="addTodo(inputElement)">add</ion-button>
+      <ion-button (click)="addTodo(inputElement, user.uid)">add</ion-button>
       <ion-list>
         <ion-item *ngFor="let item of data$|async">
           

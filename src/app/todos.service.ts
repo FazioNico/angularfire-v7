@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Firestore, collectionData, collection, setDoc, doc, deleteDoc, updateDoc, limit, QueryConstraint, where  } from '@angular/fire/firestore';
+import { Firestore, collectionData, collection, setDoc, doc, deleteDoc, updateDoc, limit, QueryConstraint, where,  } from '@angular/fire/firestore';
 import { query } from '@firebase/firestore';
 import { Observable } from 'rxjs';
 
@@ -20,8 +20,13 @@ export class TodosService {
   loadTodo(): void {
     // create firebase reference to the collection
     const fbCollection = collection(this._firestore, 'demo-todos');
+    // create query Constraints
+    const limitTo: QueryConstraint = limit(2);
+    const isTodo: QueryConstraint = where('done' , '==', false);
+    // build query with constraints
+    const q = query(fbCollection, limitTo, isTodo);
     // get the data as observable with custome ID field 
-    this.data$ = collectionData(fbCollection, {idField: 'id'});
+    this.data$ = collectionData(q, {idField: 'id'});
   }
 
   /**
@@ -33,7 +38,7 @@ export class TodosService {
     // create firebase reference to the collection
     const fbDoc = doc(this._firestore, 'demo-todos/' + id);
     // set the data with promise 
-    await setDoc(fbDoc, {desc: value}).catch(err => {
+    await setDoc(fbDoc, {desc: value, done: false}).catch(err => {
       console.log('ERROR: ',err);
     });
   }

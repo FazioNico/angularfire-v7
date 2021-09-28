@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AlertController, IonInput } from '@ionic/angular';
 import { Observable } from 'rxjs';
 import { TodosService } from './todos.service';
+import { authState, User, Auth, signInWithPopup, GoogleAuthProvider, UserCredential, signOut } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-root',
@@ -12,15 +13,19 @@ export class AppComponent implements OnInit {
 
   title = 'FireDemo';
   public data$: Observable<any[]>|undefined;
+  public user$: Observable<User | null> | undefined;
 
   constructor(
     private readonly _alertCtrl: AlertController,
-    private readonly _todosService: TodosService
+    private readonly _todosService: TodosService,
+    private readonly _auth: Auth
+
   ) {  }
 
   ngOnInit() {
     this._todosService.loadTodo();
     this.data$ = this._todosService.data$;
+    this.user$ = authState(this._auth);
   }
 
   /**
@@ -91,4 +96,14 @@ export class AppComponent implements OnInit {
     // update the data with promise
     await this._todosService.toggleState(todo);
    }
+
+  async signinWithGoogle() {
+    const provider = new GoogleAuthProvider();
+    const user: UserCredential = await signInWithPopup(this._auth, provider);
+    console.log('>>>', user);
+  }
+
+  async logout() {
+    await signOut(this._auth);
+  }
 }

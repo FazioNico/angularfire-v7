@@ -5,28 +5,39 @@
     </ion-toolbar>
   </ion-header>
   <ion-content>
-    <ion-input #inputElement type="text" clearInput="true"  clearOnEdit="true"></ion-input>
-    <ion-button (click)="addTodo(inputElement)">add</ion-button>
-    <ion-list>
-      <ion-item *ngFor="let item of data$|async">
-        
-        <ion-checkbox 
-          slot="start" 
-          [checked]="item.done === true"
-          (ionChange)="toggleDone(item)"></ion-checkbox>
 
-        {{item|json}}
-        
-        <ion-buttons slot="end">
-          <ion-button (click)="presentEditTodo(item)">
-            <ion-icon name="create"></ion-icon>
-          </ion-button>
-          <ion-button (click)="deleteTodo(item.id)">
-            <ion-icon name="trash"></ion-icon>
-          </ion-button>
-        </ion-buttons>
+    <!-- user is auth -->
+    <ng-container *ngIf="user$ | async as user; else signInTemplate">
+      <ion-button (click)="logout()">logout</ion-button>
+      <ion-input #inputElement type="text" clearInput="true"  clearOnEdit="true"></ion-input>
+      <ion-button (click)="addTodo(inputElement)">add</ion-button>
+      <ion-list>
+        <ion-item *ngFor="let item of data$|async">
+          
+          <ion-checkbox 
+            slot="start" 
+            [checked]="item.done === true"
+            (ionChange)="toggleDone(item)"></ion-checkbox>
+  
+          {{item|json}}
+          
+          <ion-buttons slot="end">
+            <ion-button (click)="presentEditTodo(item)">
+              <ion-icon name="create"></ion-icon>
+            </ion-button>
+            <ion-button (click)="deleteTodo(item.id)">
+              <ion-icon name="trash"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+  
+        </ion-item>
+      </ion-list>
+    </ng-container>
 
-      </ion-item>
-    </ion-list>
+    <!-- user in NOT auth -->
+    <ng-template #signInTemplate>
+      <ion-button (click)="signinWithGoogle()">signin with Google</ion-button>
+    </ng-template>
+  
   </ion-content>
 </ion-app>

@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-
-import { Firestore, collectionData, collection, setDoc, doc, deleteDoc, updateDoc } from '@angular/fire/firestore';
 import { AlertController, IonInput } from '@ionic/angular';
 import { Observable } from 'rxjs';
+import { TodosService } from './todos.service';
 
 @Component({
   selector: 'app-root',
@@ -10,19 +9,18 @@ import { Observable } from 'rxjs';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
+
   title = 'FireDemo';
   public data$: Observable<any[]>|undefined;
 
   constructor(
-    private readonly _firestore: Firestore,
-    private readonly _alertCtrl: AlertController
+    private readonly _alertCtrl: AlertController,
+    private readonly _todosService: TodosService
   ) {  }
 
   ngOnInit() {
-    // create firebase reference to the collection
-    const fbCollection = collection(this._firestore, 'demo-todos');
-    // get the data as observable with custome ID field 
-    this.data$ = collectionData(fbCollection, {idField: 'id'});
+    this._todosService.loadTodo();
+    this.data$ = this._todosService.data$;
   }
 
   /**
@@ -31,13 +29,10 @@ export class AppComponent implements OnInit {
    */
   async addTodo(input: IonInput) {
     console.log('add todo...');
-    const id = Date.now();
-    // create firebase reference to the collection
-    const fbDoc = doc(this._firestore, 'demo-todos/' + id);
-    // set the data with promise 
-    await setDoc(fbDoc, {desc: input.value}).catch(err => {
-      console.log('ERROR: ',err);
-    });
+    if (!input.value) {
+      return;
+    }
+    this._todosService.addTodo(input.value.toString());
     // clear the input value
     input.value = '';
     console.log('finish!');
@@ -49,11 +44,7 @@ export class AppComponent implements OnInit {
    */
   async deleteTodo(id: string) {
     console.log('delete by id: ',id);
-    // create firebase reference to the collection
-    const fbDoc = doc(this._firestore, 'demo-todos/' + id);
-    // delete the data with promise
-    await deleteDoc(fbDoc);
-    console.log('Success deleted item: ', id);
+    await this._todosService.deleteTodo(id);
   }
 
   /**
@@ -61,11 +52,8 @@ export class AppComponent implements OnInit {
    * @param id Todo ID
    * @param value Todo description to update
    */
-  async updateTodo(id: string, value: string) {
-    // create firebase reference to the collection
-    const fbDoc = doc(this._firestore, 'demo-todos/' + id);
-    // update the data with promise
-    await updateDoc(fbDoc, {desc: value});
+  async updateTodo(id: string, desc: string) {
+    await this._todosService.updateTodo({id, desc});
   }
 
   /**
@@ -92,7 +80,7 @@ export class AppComponent implements OnInit {
     if (role === 'ok') {
       console.log(data);
       // request to update the todo
-      await this.updateTodo(todo.id, data.values.desc);
+      await this._todosService.updateTodo({id: todo.id, desc: data.desc})
     }
   }
 
@@ -100,10 +88,7 @@ export class AppComponent implements OnInit {
    * UI Event Method to toggle todo Done State
    */
    async toggleDone(todo: {id: string, done: boolean}) {
-    const fbdoc = doc(this._firestore, 'demo-todos/' + todo.id);
-    const done = !todo.done;
     // update the data with promise
-    await updateDoc(fbdoc, {done}); 
-
+    await this._todosService.toggleState(todo);
    }
 }
